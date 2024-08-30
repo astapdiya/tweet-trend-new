@@ -49,9 +49,38 @@ environment {
                      buildInfo.env.collect()
                      server.publishBuildInfo(buildInfo)
                      echo '<--------------- Jar Publish Ended --------------->'  
-            
+
+                
             }
         }   
+    }
+
+         stage(" Docker Build ") {
+      steps {
+        script {
+           echo '<--------------- Docker Build Started --------------->'
+           app = docker.build(imageName+":"+version)
+           echo '<--------------- Docker Build Ends --------------->'
+        }
+      }
+    }
+    stage (" Docker Publish "){
+        steps {
+            script {
+               echo '<--------------- Docker Publish Started --------------->'  
+                docker.withRegistry(registry, 'jfrog'){
+                    app.push()
+                }    
+               echo '<--------------- Docker Publish Ended --------------->'  
+            }
+        }
+    } 
+    stage (" deployment "){
+        steps {
+            script {
+                sh 'helm install ttrend-v2 ttrend-0.1.0.tgz'
+            }
+        }
     }
 
         }
